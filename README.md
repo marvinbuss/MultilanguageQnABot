@@ -35,7 +35,9 @@ How this can be done is decribed here:
 - If you downloaded the repository as zip-File, then please unzip the archive.
 - In a terminal, navigate to the project folder.
 
-### Update the `appsettings.json`
+### Update `appsettings.json`
+
+Your Bot has to connect to the deployed services to function properly. Therefore you have to update the `appsettings.json`.
 
 - `MicrosoftAppId`: For local testing not required.
 - `MicrosoftAppPassword`: For local testing not required.
