@@ -109,7 +109,7 @@ namespace Microsoft.BotBuilderSamples
 
             if (!(response != null && response.Length > 0 && response[0].Score > float.Parse(_configuration["QnAThreshold"], CultureInfo.InvariantCulture.NumberFormat)))
             {
-                return "Sorry, but I could not find any relevant answers. Could you please rephrase your question?";
+                return "I am sorry, but I could not find relevant answers. Could you please rephrase your question?";
             }
             return response[0].Answer;
         }

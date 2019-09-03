@@ -1,73 +1,80 @@
-﻿# QnA Maker
+﻿# Multilanguage QnA Bot
 
-Bot Framework v4 QnA Maker bot sample
-
-This bot has been created using [Bot Framework](https://dev.botframework.com), it shows how to create a bot that uses the [QnA Maker Cognitive AI](https://www.qnamaker.ai) service.
-
-The [QnA Maker Service](https://www.qnamaker.ai) enables you to build, train and publish a simple question and answer bot based on FAQ URLs, structured documents or editorial content in minutes. In this sample, we demonstrate how to use the QnA Maker service to answer questions based on a FAQ text file used as input.
+This Bot was created using the [Bot Framework v4](https://dev.botframework.com), an AI based cognitive service, to implement simple Question and Answer conversational patterns, and can answer questions in more than 60 languages. The Bot uses the [QnA Maker](https://www.qnamaker.ai) as well as the [Text Translator API](https://azure.microsoft.com/en-us/services/cognitive-services/translator-text-api/)
+The [QnA Maker Service](https://www.qnamaker.ai) enables you to build, train and publish a simple question and answer bot based on FAQ URLs, structured documents or editorial content in minutes. In this sample, I demonstrate how to use the QnA Maker service in combination with the Text Translator to answer questions asked in more than 60 languages.
 
 ## Prerequisites
 
-This samples **requires** prerequisites in order to run.
+The solution was written in [.NET Core SDK](https://dotnet.microsoft.com/download) version 2.1.
+You can check your installed version the following way:
 
-### Overview
-
-This bot uses [QnA Maker Service](https://www.qnamaker.ai), an AI based cognitive service, to implement simple Question and Answer conversational patterns.
-
-- [.NET Core SDK](https://dotnet.microsoft.com/download) version 2.1
-
-  ```bash
+```bash
   # determine dotnet version
   dotnet --version
   ```
 
-### Create a QnAMaker Application to enable QnA Knowledge Bases
+### Deployment of required  on resources Azure
 
-QnA knowledge base setup and application configuration steps can be found [here](https://aka.ms/qna-instructions).
+TODO: Add script for automatic deployment of required resources
 
-## To try this sample
+### Create QnA Knowledge Base
 
-- Clone the repository
+To answer questions from the users a knowledge base must be created using QnA Maker. QnA Maker enables you to power a question and answer service from your semi-structured content. One of the basic requirements in writing your own bot is to seed it with questions and answers. In many cases, the questions and answers already exist in content like FAQ URLs/documents, product manuals, etc. With QnA Maker, users can query your application in a natural, conversational manner. QnA Maker uses machine learning to extract relevant question-answer pairs from your content. It also uses powerful matching and ranking algorithms to provide the best possible match between the user query and the questions.
+How this can be done is decribed here:
+
+- [Create a knowledge base using the QnA maker and publish the knowledge base](https://docs.microsoft.com/en-us/azure/cognitive-services/qnamaker/tutorials/create-publish-query-in-portal)
+
+## Run the Multilanguage QnA Bot
+
+### Clone the repository
 
     ```bash
-    git clone https://github.com/Microsoft/botbuilder-samples.git
+    git clone https://github.com/marvinbuss/MultilanguageQnABot.git
     ```
 
-- In a terminal, navigate to `samples/csharp_dotnetcore/11.qnamaker`
+- If you downloaded the repository as zip-File, then please unzip the archive.
+- In a terminal, navigate to the project folder.
+
+### Update the `appsettings.json`
+
+- `MicrosoftAppId`: For local testing not required.
+- `MicrosoftAppPassword`: For local testing not required.
+- `QnAKnowledgebaseId`: Base ID of your published Knowledge Base
+- `QnAAuthKey`: Authentication Key of your published Knowledge Base
+- `QnAEndpointHostName`: Endpoint of your QnA service
+- `QnAThreshold`: Threshold/Accuracy of accepted answers (e.g. 0.6 or 0.7)
+- `TranslatorTextSubscriptionKey`: Subscription Key of your Text Translator API
+- `TranslatorTextEndpoint`: Endpoint of your Text Translator service (e.g. https://api.cognitive.microsofttranslator.com/translate?api-version=3.0)
+- `TranslatorTextRoute`: Should not be changed
+
+### Run the Bot
 - Run the bot from a terminal or from Visual Studio, choose option A or B.
 
-  A) From a terminal
+#### A) From a terminal
 
-  ```bash
-  # run the bot
-  dotnet run
-  ```
+```bash
+# run the bot
+dotnet run
+```
 
-  B) Or from Visual Studio
+#### B) From Visual Studio
 
-  - Launch Visual Studio
-  - File -> Open -> Project/Solution
-  - Navigate to `samples/csharp_dotnetcore/11.qnamaker` folder
-  - Select `QnABot.csproj` file
-  - Press `F5` to run the project
+- Launch Visual Studio
+- File -> Open -> Project/Solution
+- Navigate to the project folder.
+- Select `MultilanguageQnABot.csproj` file
+- Press `F5` to run the project
 
-## Testing the bot using Bot Framework Emulator
+## Testing the Multilanguage QnA Bot using Bot Framework Emulator
 
 [Bot Framework Emulator](https://github.com/microsoft/botframework-emulator) is a desktop application that allows bot developers to test and debug their bots on localhost or running remotely through a tunnel.
-
-- Install the Bot Framework Emulator version 4.3.0 or greater from [here](https://github.com/Microsoft/BotFramework-Emulator/releases)
+Follow [this](https://github.com/Microsoft/BotFramework-Emulator/releases) link to install the Bot Framework Emulator version 4.3.0 or greater.
 
 ### Connect to the bot using Bot Framework Emulator
 
 - Launch Bot Framework Emulator
 - File -> Open Bot
 - Enter a Bot URL of `http://localhost:3978/api/messages`
-
-## QnA Maker service
-
-QnA Maker enables you to power a question and answer service from your semi-structured content.
-
-One of the basic requirements in writing your own bot is to seed it with questions and answers. In many cases, the questions and answers already exist in content like FAQ URLs/documents, product manuals, etc. With QnA Maker, users can query your application in a natural, conversational manner. QnA Maker uses machine learning to extract relevant question-answer pairs from your content. It also uses powerful matching and ranking algorithms to provide the best possible match between the user query and the questions.
 
 ## Deploy the bot to Azure
 
