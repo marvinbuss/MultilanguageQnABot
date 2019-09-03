@@ -9,11 +9,11 @@ The solution was written in [.NET Core SDK](https://dotnet.microsoft.com/downloa
 You can check your installed version the following way:
 
 ```bash
-  # determine dotnet version
-  dotnet --version
-  ```
+# determine dotnet version
+dotnet --version
+```
 
-### Deployment of required  on resources Azure
+### Deployment of required resources on Azure
 
 TODO: Add script for automatic deployment of required resources
 
@@ -28,9 +28,9 @@ How this can be done is decribed here:
 
 ### Clone the repository
 
-    ```bash
-    git clone https://github.com/marvinbuss/MultilanguageQnABot.git
-    ```
+```bash
+git clone https://github.com/marvinbuss/MultilanguageQnABot.git
+```
 
 - If you downloaded the repository as zip-File, then please unzip the archive.
 - In a terminal, navigate to the project folder.
