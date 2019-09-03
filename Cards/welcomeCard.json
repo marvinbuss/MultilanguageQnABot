@@ -1,0 +1,27 @@
+﻿{
+  "type": "AdaptiveCard",
+  "version": "1.0",
+  "body": [
+    {
+      "type": "ImageSet",
+      "images": [
+        {
+          "type": "Image",
+          "size": "Medium",
+          "altText": "",
+          "horizontalAlignment": "Center",
+          "url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtB3AwMUeNoq4gUBGe6Ocj8kyh3bXa9ZbV7u1fVKQoyKFHdkqU",
+          "height": "stretch"
+        }
+      ],
+      "horizontalAlignment": "Center"
+    },
+    {
+      "type": "TextBlock",
+      "text": "I am your QnABot and I will try to answer your questions. Just ask me something in your preferred language.",
+      "horizontalAlignment": "Center",
+      "wrap": true
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json"
+}
