@@ -13,6 +13,7 @@ using Microsoft.Bot.Builder.AI.QnA;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MultilanguageQnABot.Bots.Model;
 using Newtonsoft.Json;
 using QnABot.Translator;
 using QnABot.Translator.Model;
@@ -24,9 +25,11 @@ namespace Microsoft.BotBuilderSamples
         private readonly IConfiguration _configuration;
         private readonly ILogger<MultilanguageQnABot> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
+        public BotState _userState;
 
-        public MultilanguageQnABot(IConfiguration configuration, ILogger<MultilanguageQnABot> logger, IHttpClientFactory httpClientFactory)
+        public MultilanguageQnABot(UserState userState, IConfiguration configuration, ILogger<MultilanguageQnABot> logger, IHttpClientFactory httpClientFactory)
         {
+            _userState = userState;
             _configuration = configuration;
             _logger = logger;
             _httpClientFactory = httpClientFactory;
@@ -34,16 +37,27 @@ namespace Microsoft.BotBuilderSamples
 
         protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
         {
+            var welcomeUserStateAccessor = _userState.CreateProperty<WelcomeUserState>(nameof(WelcomeUserState));
+            var didBotWelcomeUser = await welcomeUserStateAccessor.GetAsync(turnContext, () => new WelcomeUserState());
+
             foreach (var member in membersAdded)
             {
-                if (member.Id != turnContext.Activity.Recipient.Id)
+                if (member.Id != turnContext.Activity.Recipient.Id && didBotWelcomeUser.DidBotWelcomeUser == false)
                 {
-                    var welcomeCard = CreateAdaptiveCardAttachment();
-                    var response = MessageFactory.Attachment(welcomeCard);
+                    var response = WelcomeUser();
                     await turnContext.SendActivityAsync(response, cancellationToken);
                     await turnContext.SendActivityAsync(MessageFactory.Text($"Hello and welcome {member.Name}!"), cancellationToken);
+                    didBotWelcomeUser.DidBotWelcomeUser = true;
                 }
             }
+            await _userState.SaveChangesAsync(turnContext);
+        }
+
+        private IMessageActivity WelcomeUser()
+        {
+            var welcomeCard = CreateAdaptiveCardAttachment();
+            var response = MessageFactory.Attachment(welcomeCard);
+            return response;
         }
 
         private static Attachment CreateAdaptiveCardAttachment()
@@ -57,9 +71,62 @@ namespace Microsoft.BotBuilderSamples
                 Content = JsonConvert.DeserializeObject(adaptiveCard),
             };
         }
+/*
+        protected override async Task OnConversationUpdateActivityAsync(ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
+        {
+            await turnContext.SendActivityAsync(MessageFactory.Text($"OnConversationUpdateActivityAsync {turnContext.Activity.ChannelData}!"), cancellationToken);
+            await turnContext.SendActivityAsync(MessageFactory.Text($"OnConversationUpdateActivityAsync {turnContext.Activity.ChannelId}!"), cancellationToken);
+            
+            if (turnContext.Activity.ChannelId == "webchat")
+            {
+                var welcomeUserStateAccessor = _userState.CreateProperty<WelcomeUserState>(nameof(WelcomeUserState));
+                var didBotWelcomeUser = await welcomeUserStateAccessor.GetAsync(turnContext, () => new WelcomeUserState());
 
+                if (didBotWelcomeUser.DidBotWelcomeUser == false)
+                {
+                    var response = WelcomeUser();
+                    await turnContext.SendActivityAsync(response, cancellationToken);
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"Hello and welcome {turnContext.Activity.From.Name}!"), cancellationToken);
+                    didBotWelcomeUser.DidBotWelcomeUser = true;
+                }
+                await _userState.SaveChangesAsync(turnContext);
+            }
+           
+        }
+
+        protected override async Task OnEventActivityAsync(ITurnContext<IEventActivity> turnContext, CancellationToken cancellationToken)
+        {
+            await turnContext.SendActivityAsync(MessageFactory.Text($"OnEventActivityAsync {turnContext.Activity.Name}!"), cancellationToken);
+            await turnContext.SendActivityAsync(MessageFactory.Text($"OnEventActivityAsync {turnContext.Activity.ChannelId}!"), cancellationToken);
+            await turnContext.SendActivityAsync(MessageFactory.Text($"OnEventActivityAsync {turnContext.Activity.ChannelData}!"), cancellationToken);
+            if (turnContext.Activity.Name == "webchat/join")
+            {
+                var welcomeUserStateAccessor = _userState.CreateProperty<WelcomeUserState>(nameof(WelcomeUserState));
+                var didBotWelcomeUser = await welcomeUserStateAccessor.GetAsync(turnContext, () => new WelcomeUserState());
+
+                if (didBotWelcomeUser.DidBotWelcomeUser == false)
+                {
+                    var response = WelcomeUser();
+                    await turnContext.SendActivityAsync(response, cancellationToken);
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"Hello and welcome {turnContext.Activity.From.Name}!"), cancellationToken);
+                    didBotWelcomeUser.DidBotWelcomeUser = true;
+                }
+                await _userState.SaveChangesAsync(turnContext);
+            }
+        }
+*/
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
+            /*
+            var welcomeUserStateAccessor = _userState.CreateProperty<WelcomeUserState>(nameof(WelcomeUserState));
+            var didBotWelcomeUser = await welcomeUserStateAccessor.GetAsync(turnContext, () => new WelcomeUserState());
+            if (didBotWelcomeUser.DidBotWelcomeUser == false)
+            {
+                didBotWelcomeUser.DidBotWelcomeUser = true;
+                await turnContext.SendActivityAsync($"Hello and welcome {turnContext.Activity.From.Name}.", cancellationToken: cancellationToken);
+            }
+            await _userState.SaveChangesAsync(turnContext);
+            */
             _logger.LogInformation($"Received message {turnContext.Activity.Text}");
             var translationResult = TranslateMessage("en", turnContext.Activity.Text);
             turnContext.Activity.Text = translationResult.Translations[0].Text;
