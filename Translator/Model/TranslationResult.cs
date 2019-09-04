@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace QnABot.Translator.Model
+﻿namespace QnABot.Translator.Model
 {
     public class TranslationResult
     {
