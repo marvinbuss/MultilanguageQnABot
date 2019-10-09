@@ -61,38 +61,68 @@ namespace Microsoft.BotBuilderSamples
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Received message {turnContext.Activity.Text}");
-            var translationResult = TranslateMessage("en", turnContext.Activity.Text);
+            var translationResult = TranslateMessage("en", turnContext.Activity.Text, null);
             turnContext.Activity.Text = translationResult.Translations[0].Text;
 
             var qnaResult = FindQnAAsync(turnContext);
             if (String.Equals(translationResult.DetectedLanguage.Language, "en"))
             {
-                await turnContext.SendActivityAsync(MessageFactory.Text(qnaResult.Result), cancellationToken);
+                var reply = MessageFactory.Text(qnaResult.Result.Answer.Replace("<div class=\"notranslate\">", "").Replace("</div>", ""));
+                if (qnaResult.Result.Context != null && qnaResult.Result.Context.Prompts.Length > 0)
+                {
+                    reply.SuggestedActions = new SuggestedActions
+                    {
+                        Actions = new List<CardAction>()
+                    };
+                    for (int i = 0; i < qnaResult.Result.Context.Prompts.Length; i++)
+                    {
+                        var promptText = qnaResult.Result.Context.Prompts[i].DisplayText;
+                        promptText = promptText.Replace("<div class=\"notranslate\">", "").Replace("</div>", "");
+                        reply.SuggestedActions.Actions.Add(new CardAction() { Title = promptText, Type = ActionTypes.ImBack, Value = promptText });
+                    }
+                }
+                await turnContext.SendActivityAsync(reply, cancellationToken);
             }
             else
             {
-                var translatedQnaResult = TranslateMessage(translationResult.DetectedLanguage.Language, qnaResult.Result).Translations[0].Text;
-                await turnContext.SendActivityAsync(MessageFactory.Text(translatedQnaResult), cancellationToken);
+                var translatedQnaResult = TranslateMessage(translationResult.DetectedLanguage.Language, qnaResult.Result.Answer, "en").Translations[0].Text;
+                translatedQnaResult = translatedQnaResult.Replace("<div class=\"notranslate\">", "").Replace("</div>", "");
+                var reply = MessageFactory.Text(translatedQnaResult);
+                if (qnaResult.Result.Context != null && qnaResult.Result.Context.Prompts.Length > 0)
+                {
+                    reply.SuggestedActions = new SuggestedActions
+                    {
+                        Actions = new List<CardAction>()
+                    };
+                    for (int i = 0; i < qnaResult.Result.Context.Prompts.Length; i++)
+                    {
+                        var promptText = TranslateMessage(translationResult.DetectedLanguage.Language, qnaResult.Result.Context.Prompts[i].DisplayText, "en").Translations[0].Text;
+                        promptText = promptText.Replace("<div class=\"notranslate\">", "").Replace("</div>", "");
+                        reply.SuggestedActions.Actions.Add(new CardAction() { Title = promptText, Type = ActionTypes.ImBack, Value = promptText });
+                    }
+                }
+                await turnContext.SendActivityAsync(reply, cancellationToken);
             }
         }
 
-        private TranslationResult TranslateMessage(string toLanguage, string inputText)
+        private TranslationResult TranslateMessage(string toLanguage, string inputText, string fromLanguage)
         {
             _logger.LogInformation("Calling Text Translator");
             var httpClient = _httpClientFactory.CreateClient();
-            var textTranslator = new TextTranslator(new TextTranslatorEndpoint
+
+            var endpoint = new TextTranslatorEndpoint
             {
                 subscriptionKey = _configuration["TranslatorTextSubscriptionKey"],
-                endpoint = _configuration["TranslatorTextEndpoint"],
-                route = _configuration["TranslatorTextRoute"] + toLanguage
-            },
-            httpClient);
-
+                endpoint = _configuration["TranslatorTextEndpoint"]
+            };
+            endpoint.route = fromLanguage != null ? "&from=" + fromLanguage + "&to=" + toLanguage + "&textType=html" : "&to=" + toLanguage;
+            var textTranslator = new TextTranslator(endpoint, httpClient);
+            
             var translationResult = textTranslator.TranslateTextRequest(inputText);
             return translationResult.Result;
         }
 
-        private async Task<string> FindQnAAsync(ITurnContext<IMessageActivity> turnContext)
+        private async Task<QueryResult> FindQnAAsync(ITurnContext<IMessageActivity> turnContext)
         {
             _logger.LogInformation("Calling QnA Maker");
             var httpClient = _httpClientFactory.CreateClient();
@@ -109,9 +139,13 @@ namespace Microsoft.BotBuilderSamples
 
             if (!(response != null && response.Length > 0 && response[0].Score > float.Parse(_configuration["QnAThreshold"], CultureInfo.InvariantCulture.NumberFormat)))
             {
-                return "I am sorry, but I could not find relevant answers. Could you please rephrase your question?";
+                var standardResponse = new QueryResult
+                {
+                    Answer = "I am sorry, but I could not find relevant answers. Could you please rephrase your question?"
+                };
+                return standardResponse;
             }
-            return response[0].Answer;
+            return response[0];
         }
     }
 }
