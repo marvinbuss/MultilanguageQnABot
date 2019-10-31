@@ -97,7 +97,7 @@ namespace Microsoft.BotBuilderSamples
                     for (int i = 0; i < qnaResult.Result.Context.Prompts.Length; i++)
                     {
                         var promptText = TranslateMessage(translationResult.DetectedLanguage.Language, qnaResult.Result.Context.Prompts[i].DisplayText, "en").Translations[0].Text;
-                        promptText = promptText.Replace("<div class=\"notranslate\">", "").Replace("</div>", "");
+                        promptText = promptText.Replace("<div class=\"notranslate\">", " ").Replace("</div>", " ");
                         reply.SuggestedActions.Actions.Add(new CardAction() { Title = promptText, Type = ActionTypes.ImBack, Value = promptText });
                     }
                 }
